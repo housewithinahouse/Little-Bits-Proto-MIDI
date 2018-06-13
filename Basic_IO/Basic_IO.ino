@@ -37,17 +37,20 @@ void setup(){
 
 void loop(){
   // Main loop consists of reading the incoming voltage, mapping it to a range of MIDI notes,
-  // and 
+  // sending out that note and stopping the last note sent.
   int sensorValue = analogRead(A0);
-        
-  if(sensorValue != 0){
-    currentNote = map(sensorValue, 1, 1000, 20, 70);
-  }
-  
-  if(currentNote != lastNote){
-      MIDI.sendNoteOn(currentNote, 127, 1);    // Send a note
-      MIDI.sendNoteOff(lastNote, 0, 1);        // Stop the last note  
-      lastNote = currentNote;
+      
+    if(sensorValue != 0){
+      int newCurrentNote = map(sensorValue, 1, 1000, 20, 70);                   //temp storage of new note
+      if(newCurrentNote != currentNote+1 || newCurrentNote != currentNote-1){   //check to see if new note is too close to old note
+        currentNote = newCurrentNote                                            //if it's not, set it to new current note
+      }
     }
-  }
+    
+    if(currentNote != lastNote){
+        MIDI.sendNoteOn(currentNote, 127, 1);    // Send a note
+        MIDI.sendNoteOff(lastNote, 0, 1);        // Stop the last note  
+        lastNote = currentNote;
+        count = 0;
+    }
 }
