@@ -41,16 +41,23 @@ void loop(){
   int sensorValue = analogRead(A0);
       
     if(sensorValue != 0){
-      int newCurrentNote = map(sensorValue, 1, 1000, 20, 70);                   //temp storage of new note
-      if(newCurrentNote != currentNote+1 || newCurrentNote != currentNote-1){   //check to see if new note is too close to old note
-        currentNote = newCurrentNote                                            //if it's not, set it to new current note
+      int newCurrentNote = map(sensorValue, 1, 1000, 20, 120);                   //temp storage of new note
+      if(newCurrentNote != currentNote+1 && newCurrentNote != currentNote-1){   //check to see if new note is too close to old note
+        currentNote = newCurrentNote;                                            //if it's not, set it to new current note
       }
     }
+
     
-    if(currentNote != lastNote){
+    
+    if((currentNote != lastNote) && (currentNote != swingNote)){
+      if(count%2==0){
         MIDI.sendNoteOn(currentNote, 127, 1);    // Send a note
         MIDI.sendNoteOff(lastNote, 0, 1);        // Stop the last note  
         lastNote = currentNote;
-        count = 0;
+      }
+      else{
+        swingNote = currentNote;
+      }
+      count++;
     }
 }
