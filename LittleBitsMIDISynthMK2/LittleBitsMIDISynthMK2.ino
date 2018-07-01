@@ -29,6 +29,7 @@ int synthMode = 0;
 int currentNote = 0;
 int lastNote = 0;
 int noteRange = 0;
+int sensorValue = 0;
 
 //for case 0
 bool returnedToZero = false;
@@ -41,7 +42,7 @@ int count = 0;
 
 // MIDI Scales
 int cMaj[] = {48,50,52,53,55,57,59};
-int chromatic[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80};
+int chromatic[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120};
 
 void setup(){
   MIDI.begin(4);                                                                      // Launch MIDI and listen to channel 4
@@ -55,7 +56,8 @@ void loop(){
   // this only really works well with the synth. 
 
   //check the sensor
-  int sensorValue = analogRead(littleBitsAnalogVoltagePin);
+  sensorValue = analogRead(littleBitsAnalogVoltagePin);
+  
 
 
   //this switch is to make it so that we can switch between different MIDI modes with ease. 
@@ -92,11 +94,12 @@ void singleNote(){
 
 void singleNoteWaitForReturnToZero(){
   if(sensorValue != 0 && returnedToZero){
-    int currentNote = returnMappedNote(sensorValue, chromatic);                   
+    int sizeOfNoteArray = sizeof(chromatic)/sizeof(int);
+    currentNote = returnMappedNote(sensorValue, chromatic, sizeOfNoteArray);         
   }
   
   if(!returnedToZero){
-    if(sensorValue = 0){
+    if(sensorValue < 10){
       returnedToZero = true;
     }
   }
@@ -109,9 +112,8 @@ void singleNoteWaitForReturnToZero(){
   }
 }
 
-int returnMappedNote(int currentSensorValue, int currentNoteArray[]){
-  int upperBounds = sizeof(currentNoteArray)/sizeof(int);
-  int noteIndex = constrain(map(currentSensorValue, 0, 1000, 0, upperBounds), 0, upperBounds);
+int returnMappedNote(int currentSensorValue, int currentNoteArray[], int sizeOfCurrentNoteArray){
+  int noteIndex = constrain(map(currentSensorValue, 0, 1000, 0, sizeOfCurrentNoteArray), 0, sizeOfCurrentNoteArray);
   int mappedNote = currentNoteArray[noteIndex];
   return mappedNote;
 }
