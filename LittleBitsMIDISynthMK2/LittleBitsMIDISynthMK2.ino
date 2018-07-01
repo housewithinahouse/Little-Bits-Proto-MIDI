@@ -25,20 +25,20 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 int littleBitsAnalogVoltagePin = A0;
+
+// these two vars control what mode the synth is in. I should add a couple of buttons to the synth to switch between these. 
 int synthMode = 0;
+int noteRange = 0;
+
+//these vars are used to hold the last note played and the note that is currently being played. 
 int currentNote = 0;
 int lastNote = 0;
-int noteRange = 0;
+
 int sensorValue = 0;
 
-//for case 0
+//for case 1
 bool returnedToZero = false;
 
-
-// for case 1
-int swingNote = 0;
-int swingFlag = 0;
-int count = 0;
 
 // MIDI Scales
 int cMaj[] = {48,50,52,53,55,57,59};
@@ -63,13 +63,14 @@ void loop(){
   //this switch is to make it so that we can switch between different MIDI modes with ease. 
   switch(synthMode%2){
 
-  // case 0 consists of reading the incoming voltage, mapping it to a range of MIDI notes,
-  // sending out that note and stopping the last note sent. It waits for the voltage to fall back
-  // to zero between each note. This mode is for use with the sequencer
+
     case(0):
       singleNote();
       break;
-
+      
+    // case 1 consists of reading the incoming voltage, mapping it to a range of MIDI notes,
+    // sending out that note and stopping the last note sent. It waits for the voltage to fall back
+    // to zero between each note. This mode is for use with the sequencer
     case(1):
       singleNoteWaitForReturnToZero();
       break;
@@ -77,7 +78,6 @@ void loop(){
 }
 
 void singleNote(){
-  // Reads the 
   if(sensorValue != 0){
     int newCurrentNote = map(sensorValue, 1, 1000, 20, 120);                   //temp storage of new note
     if(newCurrentNote != currentNote+1 && newCurrentNote != currentNote-1){   //check to see if new note is too close to old note
@@ -94,8 +94,7 @@ void singleNote(){
 
 void singleNoteWaitForReturnToZero(){
   if(sensorValue != 0 && returnedToZero){
-    int sizeOfNoteArray = sizeof(chromatic)/sizeof(int);
-    currentNote = returnMappedNote(sensorValue, chromatic, sizeOfNoteArray);         
+    setCurrentNote();
   }
   
   if(!returnedToZero){
@@ -109,6 +108,21 @@ void singleNoteWaitForReturnToZero(){
     MIDI.sendNoteOff(lastNote, 0, 1);        // Stop the last note  
     lastNote = currentNote;
     returnedToZero = false;
+  }
+}
+
+int setCurrentNote(){
+  int sizeOfNoteArray;
+  switch(noteRange){
+    case 0: //chromatic
+      sizeOfNoteArray = sizeof(chromatic)/sizeof(int);
+      currentNote = returnMappedNote(sensorValue, chromatic, sizeOfNoteArray);
+      break;
+      
+    case 1: //cMaj
+      sizeOfNoteArray = sizeof(cMaj)/sizeof(int);
+      currentNote = returnMappedNote(sensorValue, cMaj, sizeOfNoteArray);
+      break;
   }
 }
 
